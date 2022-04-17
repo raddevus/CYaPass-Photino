@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OFFLINE - C'YaPass : Never type a password again</title>
+<link rel="stylesheet" href="css/main.css" />
+<link rel="icon" href="cyapass.png" sizes="150x150" type="image/png">
+<link rel="shortcut icon" href="cyapass.ico">
+<link rel="apple-touch-icon" sizes="150x150" href="cyapass.png">
+<link rel="icon" href="cyapass.ico" sizes="32x32 48x48" type="image/vnd.microsoft.icon">
+<link rel="icon" href="mac.icns" sizes="16x16 32x32 48x48 64x64 128x128 512x512">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />
+<script src="js/app.js"></script>
+<script   src="https://code.jquery.com/jquery-2.2.3.min.js"   integrity="sha256-a23g1Nt4dtEYOj7bR+vTu7+T8VP13humZFBJNIYoEJo="   crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+<div class="container-fluid noselect">
+	<div class="row" style="background-color:WhiteSmoke;">
+		<div class="col-sm-6" >
+			<h3 class="cyaHeader">1. Select (or Add) Site/Key</h3>
+			<select id="SiteListBox" size="10"></select>
+			<button type="button" class="btn btn-default" onclick="addButtonClick()">Add</button>
+			<button type="button" class="btn btn-default" onclick="editButtonClick()">Edit</button>
+			<button type="button" class="btn btn-default" onclick="deleteButtonClick()">Delete</button>
+			
+			<form class="form-inline">
+				<div class="input-group">
+					<label class="input-group-addon"><input id="addUppercaseCheckBox" type="checkbox" value=""><strong> Add UpperCase</strong></label>
+					<label id="noshow" class="form-control" ></label>
+				</div>
+				<div class="input-group">
+					<label class="input-group-addon"><input id="addSpecialCharsCheckBox" type="checkbox" value=""><strong> Add Special Chars</strong></label>
+					<input class="form-control" id="specialChars" placeholder="special chars">
+				</div>
+				<div class="input-group">
+					<label class="input-group-addon"><input id="maxLengthCheckBox" type="checkbox" value=""><strong> Max Length</strong></label>
+					<input type = "number" max="64" min="0" class="form-control" id="maxLength" value="32">
+				</div>
+			</form>
+		</div>
+		<div class="col-sm-6" >
+		<h3 class="cyaHeader">2. Draw a pattern</h3>
+		<canvas id="mainGrid">You're browser does not support HTML5.</canvas>
+			<div class="input-group">
+				<label class="input-group-addon"><input id="hidePatternCheckBox" type="checkbox" value=""><strong> Hide Pattern</strong></label>
+				<button type="button" class="btn btn-default" onclick="clearButtonClick()">Clear</button>
+			</div>
+			<div class="form-group">
+				<textarea class="form-control" rows="3" id="passwordText" placeholder="password"></textarea>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script src="js/sha256.js"></script>
+<script src="js/cyapass.js"></script>
+
+<div class="startLocation">
+<!-- blogtop --><!--
+<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+
+<ins class="adsbygoogle"
+     style="display:inline-block;width:320px;height:100px"
+     data-ad-client="ca-pub-6286879032545261"
+     data-ad-slot="6030258726"></ins>
+<script>
+(adsbygoogle = window.adsbygoogle || []).push({});
+</script> -->
+</div>
+
+<div class="modal fade" id="AddSiteKeyModal" tabindex="-1" role="dialog" aria-labelledby="AddSiteKeyLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="AddSiteKeyLabel">Add New Site/Key</h4>
+      </div>
+      <div class="modal-body">
+        <label for="SiteKeyItem">Site/Key</label> <span id="siteKeyErrMsg"></span>
+		<input class="form-control" type="text" id="SiteKeyItem" autofocus placeholder="Site/Key">
+			<div class="form-group row">
+			<div class="checkbox">
+				<div class="col-sm-3">
+				<label><input id="addUppercaseCheckboxDlg" type="checkbox" value="">add uppercase</label>
+				</div>
+				<div class="col-sm-4">
+				<label><input id="addSpecialCharsCheckboxDlg" type="checkbox" value="">add special char(s)</label>
+				</div>
+				<div class="col-sm-3">
+				<label><input id="setMaxLengthCheckboxDlg" type="checkbox" value="">set max length</label>
+				<input class="form-control input-sm " value="32" type="text" id="maxLengthDlg" placeholder="max length">
+				</div>
+			</div>
+			</div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default btn-submit" data-dismiss="modal">Cancel</button>
+        <button id="OKSiteKeyButton" type="button" class="btn btn-primary">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="DeleteSiteKeyModal" tabindex="-1" role="dialog" aria-labelledby="DeleteSiteKeyLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="DeleteSiteKeyLabel">Confirm Deletion of Site/Key</h4>
+      </div>
+      <div class="modal-body">
+        <span id="siteKeyDelMsg"></span><span id="siteKeyDelValue"></span>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default btn-submit" data-dismiss="modal">Cancel</button>
+        <button id="OKDeleteButton" type="button" class="btn btn-primary">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+</body>
+</html>

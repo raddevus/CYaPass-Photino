@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>C'YaPass : Never type a password again</title>
+<link rel="stylesheet" href="css/main.css" />
+<link rel="icon" href="cyapass.png" sizes="150x150" type="image/png">
+<link rel="shortcut icon" href="cyapass.ico">
+<link rel="apple-touch-icon" sizes="150x150" href="cyapass.png">
+<link rel="icon" href="cyapass.ico" sizes="32x32 48x48" type="image/vnd.microsoft.icon">
+<link rel="icon" href="mac.icns" sizes="16x16 32x32 48x48 64x64 128x128 512x512">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js"></script>
+<script src="js/app.js"></script>
+<script src="js/crypt.js"></script>
+<script   src="https://code.jquery.com/jquery-2.2.3.min.js"   integrity="sha256-a23g1Nt4dtEYOj7bR+vTu7+T8VP13humZFBJNIYoEJo="   crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+<div class="container-fluid noselect">
+	<div class="row" style="background-color:WhiteSmoke;">
+		<div class="col-sm-6" >
+			<h3 class="cyaHeader">1. Select (or Add) Site/Key</h3>
+			<select id="SiteListBox" size="10"></select>
+			<div id="importAlert" class="alert alert-success k-hidden" role="alert">
+				Import succeeded: <strong><span id="importCount"></span></strong> sitekeys imported.
+			   <button class="alert-dismissable close" data-dismiss="alert"
+			   onclick="javascript:document.querySelector('.alert').style.display='none'">
+			   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-square" viewBox="0 0 16 16">
+				 <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+				 <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+			   </svg>
+			 </button>
+			</div>
+			<button type="button" class="btn btn-primary" onclick="addButtonClick()">Add</button>
+			<button type="button" class="btn btn-primary" onclick="editButtonClick()">Edit</button>
+			<button type="button" class="btn btn-primary" onclick="deleteButtonClick()">Delete</button>
+			<button id="clipboardButton" type="button" class="btn btn-primary" onclick="addToClipboardButtonClick()">
+				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard-plus" viewBox="0 0 16 16">
+					<path fill-rule="evenodd" d="M8 7a.5.5 0 0 1 .5.5V9H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V10H6a.5.5 0 0 1 0-1h1.5V7.5A.5.5 0 0 1 8 7z"/>
+					<path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+					<path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+				  </svg>
+			</button>
+			<form class="form-inline">
+				<div class="input-group">
+					<label class="input-group-addon"><input id="addUppercaseCheckBox" type="checkbox" value=""><strong> Add UpperCase</strong></label>
+					<label id="noshow" class="form-control" ></label>
+				</div>
+				<div class="input-group">
+					<label class="input-group-addon"><input id="addSpecialCharsCheckBox" type="checkbox" value=""><strong> Add Special Chars</strong></label>
+					<input class="form-control" id="specialChars" placeholder="special chars">
+				</div>
+				<div class="input-group">
+					<label class="input-group-addon"><input id="maxLengthCheckBox" type="checkbox" value=""><strong> Max Length</strong></label>
+					<input type = "number" max="64" min="0" class="form-control" id="maxLength" value="32">
+				</div>
+			</form>
+			<form class="form-inline">
+				<div class="topPad bottomPad">
+				  <button type="button" class="btn btn-sm btn-primary" onclick="exportButtonHandler()">Export SiteKeys</button>
+				  <button type="button" class="btn btn-sm btn-primary" onclick="importButtonHandler()">Import SiteKeys</button>
+				  <button type="button" class="btn btn-sm btn-primary" onclick="transferUrlButtonHandler()">Set Transfer URL</button>
+				 </div>
+			  </form>
+		</div>
+		<div class="col-sm-6" >
+		<h3 class="cyaHeader">2. Draw a pattern</h3>
+		<canvas id="mainGrid">You're browser does not support HTML5.</canvas>
+			<div class="input-group">
+				<label class="input-group-addon"><input id="hidePatternCheckBox" type="checkbox" value=""><strong> Hide Pattern</strong></label>
+				<button type="button" class="btn btn-primary" onclick="clearButtonClick()">Clear</button>
+			</div>
+			<div class="form-group">
+				<textarea class="form-control" rows="3" id="passwordText" placeholder="password"></textarea>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script src="js/sha256.js"></script>
+<script src="js/cyapass.js"></script>
+
+<div class="startLocation">
+<!-- blogtop --><!--
+<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+
+<ins class="adsbygoogle"
+     style="display:inline-block;width:320px;height:100px"
+     data-ad-client="ca-pub-6286879032545261"
+     data-ad-slot="6030258726"></ins>
+<script>
+(adsbygoogle = window.adsbygoogle || []).push({});
+</script> -->
+</div>
+
+<div class="modal fade" id="AddSiteKeyModal" tabindex="-1" role="dialog" aria-labelledby="AddSiteKeyLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="AddSiteKeyLabel">Add New Site/Key</h4>
+      </div>
+      <div class="modal-body">
+        <label for="SiteKeyItem">Site/Key</label> <span id="siteKeyErrMsg"></span>
+		<input class="form-control" type="text" id="SiteKeyItem" autofocus placeholder="Site/Key">
+			<div class="form-group row">
+			<div class="checkbox">
+				<div class="col-sm-3">
+				<label><input id="addUppercaseCheckboxDlg" type="checkbox" value="">add uppercase</label>
+				</div>
+				<div class="col-sm-4">
+				<label><input id="addSpecialCharsCheckboxDlg" type="checkbox" value="">add special char(s)</label>
+				</div>
+				<div class="col-sm-3">
+				<label><input id="setMaxLengthCheckboxDlg" type="checkbox" value="">set max length</label>
+				<input class="form-control input-sm " value="32" type="text" id="maxLengthDlg" placeholder="max length">
+				</div>
+			</div>
+			</div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default btn-submit" data-dismiss="modal">Cancel</button>
+        <button id="OKSiteKeyButton" type="button" class="btn btn-primary">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="DeleteSiteKeyModal" tabindex="-1" role="dialog" aria-labelledby="DeleteSiteKeyLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="DeleteSiteKeyLabel">Confirm Deletion of Site/Key</h4>
+      </div>
+      <div class="modal-body">
+        <span id="siteKeyDelMsg"></span><span id="siteKeyDelValue"></span>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default btn-submit" data-dismiss="modal">Cancel</button>
+        <button id="OKDeleteButton" type="button" class="btn btn-primary">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="ExportModal" tabindex="2" role="dialog" aria-labelledby="ExportLabel">
+	<div class="modal-dialog" role="document">
+	  <div class="modal-content">
+		<div class="modal-title">
+		  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+		  <h4 class="modal-title" id="ExportLabel">Export Encrypted Site/Keys</h4>
+		</div>
+		<div class="modal-body">
+		  <label for="SiteKeyItem">CYa Secret ID</label> <span id="secretIdErrMsg"></span>
+		   <input class="form-control" type="text" id="SecretId" autofocus placeholder="CYa Secret Id">
+		</div>
+		<div class="modal-footer">
+		  <button type="button" class="btn btn-sm btn-outline-primary btn-submit" data-dismiss="modal">Cancel</button>
+		  <button id="OKExportButton" type="button" class="btn btn-sm btn-primary">OK</button>
+		</div>
+	  </div>
+	</div>
+   </div>
+  
+   <div class="modal fade" id="SetTransferUrlModal" tabindex="2" role="dialog" aria-labelledby="TransferLabel">
+	<div class="modal-dialog" role="document">
+	  <div class="modal-content">
+		<div class="modal-title">
+		  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+		  <h4 class="modal-title" id="TransferLabel">Set Transfer URL</h4>
+		</div>
+		<div class="modal-body">
+		  <div class="input-group" >
+			<input id="transferUrlText" type="text" class="form-control" placeholder="Transfer URL" aria-label="transferUrlText" aria-describedby="setDefaultUrlButton">
+			<span class="input-group-btn">
+			  <button class="btn btn-default" onclick="setDefaultUrl()" type="button" id="setDefaultUrlButton">Set Default</button>
+			</span>
+		  </div>
+		</div>
+		<div class="modal-footer">
+		  <button type="button" class="btn btn-sm btn-outline-primary btn-submit" data-dismiss="modal">Cancel</button>
+		  <button id="OKTransferButton" type="button" class="btn btn-sm btn-primary">OK</button>
+		</div>
+	  </div>
+	</div>
+   </div>
+
+   <div class="modal fade" tabindex="-1" id="ExportMsgModal" role="dialog">
+	<div class="modal-dialog" role="document">
+	  <div class="modal-content">
+	
+		<div class="modal-header">
+		  <h4 class="modal-title">Please Draw Encryption Password</h4>
+		  <button type="button" class="close" data-dismiss="modal">&times;</button>
+		</div>
+		
+		<div id="exportMainMsg" class="modal-body"> 
+		</div>
+		
+		<div class="modal-footer">
+		  <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+		</div>
+		
+	  </div>
+	</div>
+  </div>
+
+
+
+</body>
+</html>
