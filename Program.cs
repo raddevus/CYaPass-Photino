@@ -26,7 +26,7 @@ namespace HelloPhotinoApp
                 // Users can resize windows by default.
                 // Let's make this one fixed instead.
                 .SetResizable(false)
-                .SetIconFile(@"wwwroot\cyapass.ico")
+                .SetIconFile(@"wwwroot/cyapass.ico")
                 .RegisterCustomSchemeHandler("app", (object sender, string scheme, string url, out string contentType) =>
                 {
                     contentType = "text/javascript";
