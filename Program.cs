@@ -11,7 +11,7 @@ namespace CYaPassPhotino
         [STAThread]
         static void Main(string[] args)
         {
-            var version = "1.3.1";
+            var version = "1.4.0";
             // Window title declared here for visibility
             string windowTitle = $"CYaPass : v{version} ";
 
@@ -21,6 +21,7 @@ namespace CYaPassPhotino
                 // Resize to a percentage of the main monitor work area
                 .SetUseOsDefaultSize(false)
                 .SetSize(new Size(820, 600))
+                //.SetIconFile("./wwwroot/cyapass.png")
                 // Center window in the middle of the screen
                 .Center()
                 // Users can resize windows by default.

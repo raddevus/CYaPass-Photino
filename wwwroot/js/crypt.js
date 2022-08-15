@@ -1,22 +1,26 @@
+let iv;
+
 function encrypt(message, key, useIV){
-    if (useIV){
-      let  iv   = CryptoJS.enc.Hex.parse(key);
-    message = CryptoJS.AES.encrypt(message, iv,{iv: iv});
-    }
-  else{
-    message = CryptoJS.AES.encrypt(message, key);
+  if (useIV){
+    iv = CryptoJS.lib.WordArray.random(128/8).toString();
+    console.log(iv.toString());
+    message = CryptoJS.AES.encrypt(message, CryptoJS.enc.Hex.parse(key),{iv: CryptoJS.enc.Hex.parse(iv)});
+  }
+  else
+  {
+    message = CryptoJS.AES.encrypt(message, CryptoJS.enc.Hex.parse(key));
   }
   
-    return message.toString();
+  return message.toString();
 }
 
-function decrypt(message){
+function decrypt(message,iv){
     let code;  
 
     console.log(`pwdBuffer: ${pwdBuffer}`)
-    let  iv   = CryptoJS.enc.Hex.parse(pwdBuffer);
     console.log(`iv ${iv}`);
-    code = CryptoJS.AES.decrypt(message, iv,{iv:iv});
+
+    code = CryptoJS.AES.decrypt(message, CryptoJS.enc.Hex.parse(pwdBuffer),{iv:CryptoJS.enc.Hex.parse(iv)});
     console.log(`code ${code}`);
 
     var decryptedMessage = code.toString(CryptoJS.enc.Utf8);
@@ -27,19 +31,27 @@ function decrypt(message){
 
 function encryptFromText(clearText){
   let useIV = true;
-  let encryptedText = encrypt(clearText,pwd,useIV);
+  let encryptedText = encrypt(clearText,pwdBuffer,useIV);
   console.log(encryptedText);
   return encryptedText;
 
 }
 
-function decryptFromText(cipherText){
+function decryptFromText(cipherText,iv){
+
+  console.log(`pwd: ${pwd}`);
   
-  console.log(`cipherText ${cipherText}`);
-  let useIV = true;
+  return decrypt(cipherText.trim(),iv,true);
+}
+
+function generateHmac(encryptedData, in_iv){
   
-  //let hashValue = sha256(pwd);
-  console.log(pwd);
+  console.log(`in_iv : ${in_iv}`);
+  console.log(`pwdBuffer: ${pwdBuffer}`);
+  // hmac function requires KEY value 1st (opposite of other library)
+  let Hmac = sha256.hmac(pwdBuffer,`${in_iv}:${encryptedData}`);
   
-  return decrypt(cipherText.trim());
+  //let Hmac = sha256.hmac();
+  console.log(`mac : ${Hmac}`);
+  return Hmac;
 }
